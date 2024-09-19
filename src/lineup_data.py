@@ -2,10 +2,10 @@ from daily_lineups import extract_lineups, lineups_by_date, previous_day, today
 import pandas as pd
 from pathlib import Path
 import pins
-from pybaseball import playerid_reverse_lookup
+from pybaseball import playerid_reverse_lookup, team_game_logs
 import pybaseball.league_batting_stats as lbs
 import pybaseball.league_pitching_stats as lps
-import pybaseball.team_game_logs as tgl
+from pybaseball.team_game_logs import session as tgl_session
 import time
 from tqdm import tqdm
 
@@ -29,7 +29,7 @@ current_proxy_index = 0
 
 lbs.session.max_requests_per_minute = 20
 lps.session.max_requests_per_minute = 20
-tgl.session.max_requests_per_minute = 20
+tgl_session.max_requests_per_minute = 20
 
 ##################
 
@@ -115,10 +115,10 @@ def game_score(date: str, team: str) -> pd.DataFrame:
     ## Setup proxy
     global current_proxy_index
     current_proxy = proxy(proxy_list[current_proxy_index])
-    tgl.session.session.proxies = {"http": current_proxy, "https": current_proxy}
+    tgl_session.session.proxies = {"http": current_proxy, "https": current_proxy}
     current_proxy_index = (current_proxy_index + 1) % len(proxy_list)
     ## Pull game logs via proxy
-    game_logs = tgl.team_game_logs(season=year, team=team)
+    game_logs = team_game_logs(season=year, team=team)
     game_logs[["clean_date", "game_date_id"]] = (
         game_logs["Date"]
         .str
