@@ -26,7 +26,9 @@ jobs:
       - name: Install package dependencies
         run: pip install -r requirements.txt
 
-      - name: Run Python script
+      - name: Scrape data
+        env:
+          WEBSHARE_TOKEN: ${{ secrets.WEBSHARE_TOKEN }}
         run: python src/lineup_data.py
 
       # Commit all changed files back to the repository

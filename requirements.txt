@@ -1,5 +1,7 @@
 beautifulsoup4
+httpimport
 pins
 pybaseball
 requests
 unidecode
+xgboost

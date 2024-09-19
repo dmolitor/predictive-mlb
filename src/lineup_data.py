@@ -2,11 +2,37 @@ from daily_lineups import extract_lineups, lineups_by_date, previous_day, today
 import pandas as pd
 from pathlib import Path
 import pins
-from pybaseball import playerid_reverse_lookup, team_game_logs
-# from pybaseball_fix import batting_stats_range, pitching_stats_range
-from pybaseball import batting_stats_range, pitching_stats_range
+from pybaseball import (
+    playerid_reverse_lookup,
+    team_game_logs
+)
+import pybaseball.league_batting_stats as lbs
+import pybaseball.league_pitching_stats as lps
 import time
 from tqdm import tqdm
+
+### Import proxies
+
+"""
+Baseball Reference is being stupid and blocking me for crawling (super slowly!!!)
+This cycles through 10 proxies and allows me to crawl faster without getting blocked.
+"""
+
+import os
+import requests
+ 
+response = requests.get(
+    "https://proxy.webshare.io/api/v2/proxy/list/?mode=direct&page=1&page_size=25",
+    headers={"Authorization": os.environ["WEBSHARE_TOKEN"]}
+)
+ 
+proxy_list = response.json()["results"]
+current_proxy_index = 0
+
+lbs.session.max_requests_per_minute = 20
+lps.session.max_requests_per_minute = 20
+
+##################
 
 all_star_game = {
     2024: "2024-07-16"
@@ -130,11 +156,16 @@ def lineups(date: str = today()) -> pd.DataFrame:
         batting_data = pd.DataFrame()
         pitching_data = pd.DataFrame()
     else:
-        batting_data = batting_stats_range(
+        global current_proxy_index
+        current_proxy = proxy(proxy_list[current_proxy_index])
+        lbs.session.session.proxies = {"http": current_proxy, "https": current_proxy}
+        lps.session.session.proxies = {"http": current_proxy, "https": current_proxy}
+        current_proxy_index = (current_proxy_index + 1) % len(proxy_list)
+        batting_data = lbs.batting_stats_range(
             start_dt=opening_day[year],
             end_dt=previous_day(date)
         )
-        pitching_data = pitching_stats_range(
+        pitching_data = lps.pitching_stats_range(
             start_dt=opening_day[year],
             end_dt=previous_day(date)
         )
@@ -292,6 +323,10 @@ def pitching_stats(ids: list, stats: pd.DataFrame) -> pd.DataFrame:
     for col in normalize_cols:
         stats[col] = stats[col] / stats["IP"]
     return stats[keep_cols]
+
+def proxy(x: dict):
+    proxy_url = f"http://{x['username']}:{x['password']}@{x['proxy_address']}:{x['port']}"
+    return proxy_url
 
 if __name__ == "__main__":
     output_dir = Path(__file__).resolve().parent.parent / "data"
