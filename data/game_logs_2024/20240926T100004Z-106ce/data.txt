@@ -1,0 +1,9 @@
+api_version: 1
+created: 20240926T100004Z
+description: null
+file: game_logs_2024.csv
+file_size: 622373
+pin_hash: 106ce84d291fcef8
+title: 'game_logs_2024: a pinned 4748 x 34 DataFrame'
+type: csv
+user: {}
