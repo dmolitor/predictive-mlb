@@ -1,0 +1,9 @@
+api_version: 1
+created: 20241004T100033Z
+description: null
+file: lineups_2024.csv
+file_size: 12672739
+pin_hash: 2fa70c17b36d5868
+title: 'lineups_2024: a pinned 4874 x 203 DataFrame'
+type: csv
+user: {}
